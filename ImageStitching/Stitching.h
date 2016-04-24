@@ -1,5 +1,5 @@
-#ifndef _BLEND_H_
-#define _BLEND_H_
+#ifndef _STITCHING_H_
+#define _STITCHING_H_
 
 #include "Feature.h"
 #include "Match.h"

@@ -13,7 +13,7 @@
 #include "FileReading.h"
 #include "Stitching.h"
 
-#define FILE_FOLDER "dataset2\\"
+#define FILE_FOLDER "dataset1\\"
 
 using namespace cimg_library;
 using namespace std;

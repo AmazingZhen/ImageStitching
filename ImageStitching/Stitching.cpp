@@ -89,7 +89,8 @@ CImg<unsigned char> stitching(const vector<CImg<unsigned char>> &src_imgs) {
 			warpingImageByHomography(src_imgs[dst_index], a, backward_H, min_x, min_y);
 			movingImageByOffset(src_imgs[src_index], b, min_x, min_y);
 
-			(a,b).display();
+			CImg<unsigned char> res = blendTwoImages(a, b);
+			res.display();
 		}
 
 	}
