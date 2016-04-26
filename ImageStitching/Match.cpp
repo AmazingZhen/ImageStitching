@@ -6,8 +6,16 @@ int getXAfterWarping(int x, int y, Parameters H) {
 	return ceil(H.c1 * x + H.c2 * y + H.c3 * x * y + H.c4);
 }
 
+float getXAfterWarping(float x, float y, Parameters H) {
+	return H.c1 * x + H.c2 * y + H.c3 * x * y + H.c4;
+}
+
 int getYAfterWarping(int x, int y, Parameters H) {
 	return ceil(H.c5 * x + H.c6 * y + H.c7 * x * y + H.c8);
+}
+
+float getYAfterWarping(float x, float y, Parameters H) {
+	return H.c5 * x + H.c6 * y + H.c7 * x * y + H.c8;
 }
 
 vector<point_pair> getPointPairsFromFeature(const map<vector<float>, VlSiftKeypoint> &feature_a, const map<vector<float>, VlSiftKeypoint> &feature_b) {
@@ -138,11 +146,11 @@ int getNumOfInliners(const vector<point_pair> &pairs, Parameters H) {
 	int count = 0;
 
 	for (int i = 0; i < pairs.size(); i++) {
-		int real_x = pairs[i].b.ix;
-		int real_y = pairs[i].b.iy;
+		float real_x = pairs[i].b.x;
+		float real_y = pairs[i].b.y;
 
-		int x = getXAfterWarping(pairs[i].a.ix, pairs[i].a.iy, H);
-		int y = getYAfterWarping(pairs[i].a.ix, pairs[i].a.iy, H);
+		float x = getXAfterWarping(pairs[i].a.x, pairs[i].a.y, H);
+		float y = getYAfterWarping(pairs[i].a.x, pairs[i].a.y, H);
 
 		float distance = sqrt((x - real_x) * (x - real_x) + (y - real_y) * (y - real_y));
 		if (distance < RANSAC_THRESHOLD) {
@@ -154,7 +162,7 @@ int getNumOfInliners(const vector<point_pair> &pairs, Parameters H) {
 }
 
 Parameters RANSAC(const vector<point_pair> &pairs) {
-	assert(pairs.size() >= 20);
+	assert(pairs.size() >= 4);
 
 	int iterations = numberOfIterations(CONFIDENCE, INLINER_RATIO, NUM_OF_PAIR);
 	int max_inliner_num = 0;

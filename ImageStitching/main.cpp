@@ -7,13 +7,14 @@
 #include <cassert>
 #include <cmath>
 #include "CImg.h"
+#include "Projection.h"
 #include "Feature.h"
 #include "Match.h"
 #include "Warping.h"
 #include "FileReading.h"
 #include "Stitching.h"
 
-#define FILE_FOLDER "dataset1\\"
+#define FILE_FOLDER "dataset3\\"
 
 using namespace cimg_library;
 using namespace std;
@@ -70,20 +71,12 @@ int main(int argc, char **argv) {
 
 	for (int i = 0; i < image_files.size(); i++) {
 		src_imgs[i] = CImg<float>(image_files[i].c_str());
-		/*CImg<unsigned char> gray = get_gray_image(src_imgs[i]);
-		getFeatureFromImage(gray, features[i]);
-		cout << i << endl;*/
+		src_imgs[i] = cylinderProjection(src_imgs[i]);
+		cout << i << endl;
 	}
 
-	stitching(src_imgs);
-
-	/*Parameters H1 = RANSAC(getPointPairsFromFeature(features[1], features[0]));
-
-
-	CImg<unsigned char> res = warpingImageByHomography(src_imgs[0], H);
-	res.display();
-	res.save("dataset1\\a.bmp");*/
-	
+	CImg<unsigned char> res = stitching(src_imgs);
+	res.save("res/pano2.jpg");
 	
 	return 0;
 }

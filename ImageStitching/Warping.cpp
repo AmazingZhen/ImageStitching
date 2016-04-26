@@ -92,30 +92,6 @@ void warpingImageByHomography(const CImg<unsigned char> &src, CImg<unsigned char
 			}
 		}
 	}
-	
-	//for (int i = 0; i < src.width(); i++) {
-	//	for (int j = 0; j < src.height(); j++) {
-	//		int x;
-	//		int y;
-	//		if (min_x < 0) {
-	//			x = getXAfterWarping(i, j, H) - min_y;
-	//		}
-	//		else {
-	//			x = getXAfterWarping(i, j, H);
-	//		}
-
-	//		if (min_y < 0) {
-	//			y = getYAfterWarping(i, j, H) - min_y;
-	//		}
-	//		else {
-	//			y = getYAfterWarping(i, j, H);
-	//		}
-
-	//		for (int k = 0; k < src.spectrum(); k++) {
-	//			res(x, y, k) = src(i, j, k);
-	//		}
-	//	}
-	//}
 }
 
 void movingImageByOffset(const CImg<unsigned char> &src, CImg<unsigned char> &dst, int offset_x, int offset_y) {

@@ -14,7 +14,7 @@ using namespace std;
 #define CONFIDENCE 0.99
 #define INLINER_RATIO 0.6
 
-#define RANSAC_THRESHOLD 4.0
+#define RANSAC_THRESHOLD 3.0
 
 extern "C" {
 #include "vl/generic.h"
@@ -66,7 +66,9 @@ struct Parameters {
 };
 
 int getXAfterWarping(int x, int y, Parameters H);
+float getXAfterWarping(float x, float y, Parameters H);
 int getYAfterWarping(int x, int y, Parameters H);
+float getYAfterWarping(float x, float y, Parameters H);
 
 vector<point_pair> getPointPairsFromFeature(const map<vector<float>, VlSiftKeypoint> &feature_a, const map<vector<float>, VlSiftKeypoint> &feature_b);
 Parameters getHomographyFromPoingPairs(const vector<point_pair> &pairs);

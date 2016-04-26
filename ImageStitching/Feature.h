@@ -6,7 +6,7 @@
 #include <vector>
 #include "CImg.h"
 
-#define RESIZE_WIDTH 500.0
+#define RESIZE_SIZE 500.0
 
 using namespace cimg_library;
 using namespace std;
@@ -16,6 +16,6 @@ extern "C" {
 	#include "vl/sift.h"
 }
 
-void getFeatureFromImage(const CImg<unsigned char> &src, map<vector<float>, VlSiftKeypoint>& features);
+map<vector<float>, VlSiftKeypoint> getFeatureFromImage(const CImg<unsigned char> &src);
 
 #endif

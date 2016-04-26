@@ -48,6 +48,9 @@
     <ClInclude Include="Stitching.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Projection.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -75,6 +78,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Stitching.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Projection.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

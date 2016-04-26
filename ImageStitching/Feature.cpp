@@ -1,12 +1,18 @@
 #include "stdafx.h"
 #include "Feature.h"
 
-void getFeatureFromImage(const CImg<unsigned char> &input, map<vector<float>, VlSiftKeypoint>& features) {
+map<vector<float>, VlSiftKeypoint>  getFeatureFromImage(const CImg<unsigned char> &input) {
 	assert(input.spectrum() == 1);
 
 	CImg<unsigned char> src(input);
 
-	float resize_factor = RESIZE_WIDTH / input.width();
+	float resize_factor;
+	if (input.width() < input.height()) {
+		resize_factor = RESIZE_SIZE / input.width();
+	}
+	else {
+		resize_factor = RESIZE_SIZE / input.height();
+	}
 
 	if (resize_factor >= 1) {
 		resize_factor = 1;
@@ -27,6 +33,8 @@ void getFeatureFromImage(const CImg<unsigned char> &input, map<vector<float>, Vl
 	int noctaves = 4, nlevels = 2, o_min = 0;
 	VlSiftFilt *siftFilt = NULL;
 	siftFilt = vl_sift_new(src.width(), src.height(), noctaves, nlevels, o_min);
+
+	map<vector<float>, VlSiftKeypoint> features;
 
 	// Compute the first octave of the DOG scale space.
 	if (vl_sift_process_first_octave(siftFilt, imageData) != VL_ERR_EOF) {
@@ -58,8 +66,6 @@ void getFeatureFromImage(const CImg<unsigned char> &input, map<vector<float>, Vl
 						k++;
 					}
 
-					// http://stackoverflow.com/questions/28606011/vlfeat-kdtree-setup-and-query
-
 					tempKeyPoint.x /= resize_factor;
 					tempKeyPoint.y /= resize_factor;
 					tempKeyPoint.ix = tempKeyPoint.x;
@@ -81,4 +87,5 @@ void getFeatureFromImage(const CImg<unsigned char> &input, map<vector<float>, Vl
 	delete[] imageData;
 	imageData = NULL;
 
+	return features;
 }
