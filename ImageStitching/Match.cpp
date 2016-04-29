@@ -164,6 +164,8 @@ int getNumOfInliners(const vector<point_pair> &pairs, Parameters H) {
 Parameters RANSAC(const vector<point_pair> &pairs) {
 	assert(pairs.size() >= 4);
 
+	srand(time(0));
+
 	int iterations = numberOfIterations(CONFIDENCE, INLINER_RATIO, NUM_OF_PAIR);
 	int max_inliner_num = 0;
 	Parameters best_H(0, 0, 0, 0, 0, 0, 0, 0);

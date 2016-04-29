@@ -14,7 +14,7 @@
 #include "FileReading.h"
 #include "Stitching.h"
 
-#define FILE_FOLDER "dataset3\\"
+#define FILE_FOLDER "dataset1\\"
 
 using namespace cimg_library;
 using namespace std;
@@ -70,13 +70,13 @@ int main(int argc, char **argv) {
 	vector<map<vector<float>, VlSiftKeypoint>> features(image_files.size());
 
 	for (int i = 0; i < image_files.size(); i++) {
-		src_imgs[i] = CImg<float>(image_files[i].c_str());
+		src_imgs[i] = CImg<unsigned char>(image_files[i].c_str());
 		src_imgs[i] = cylinderProjection(src_imgs[i]);
 		cout << i << endl;
 	}
 
 	CImg<unsigned char> res = stitching(src_imgs);
-	res.save("res/pano2.jpg");
+	res.save("res/pano6.jpg");
 	
 	return 0;
 }

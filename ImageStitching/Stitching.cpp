@@ -24,7 +24,7 @@ CImg<unsigned char> get_gray_image(const CImg<unsigned char> &srcImg) {
 }
 
 int getMiddleIndex(vector<vector<int>> matching_index) {
-	int one_side = -1;
+	int one_side = 0;
 
 	for (int i = 0; i < matching_index.size(); i++) {
 		if (matching_index[i].size() == 1) {
@@ -166,6 +166,7 @@ CImg<unsigned char> stitching(const vector<CImg<unsigned char>> &src_imgs) {
 
 			// Blending two images.
 			cur_stitched_img = blendTwoImages(a, b);
+			cur_stitched_img.display();
 			prev_dst_index = dst_index;
 		}
 
