@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Stitching.h"
+#include "Projection.h"
 #include <queue>
 
 CImg<unsigned char> get_gray_image(const CImg<unsigned char> &srcImg) {
@@ -62,7 +63,7 @@ void updateFeaturesByHomography(map<vector<float>, VlSiftKeypoint> &feature, Par
 	}
 }
 
-void updateFeaturesByOffset(map<vector<float>, VlSiftKeypoint> &feature, float offset_x, float offset_y) {
+void updateFeaturesByOffset(map<vector<float>, VlSiftKeypoint> &feature, int offset_x, int offset_y) {
 	for (auto iter = feature.begin(); iter != feature.end(); iter++) {
 		iter->second.x -= offset_x;
 		iter->second.y -= offset_y;
@@ -71,14 +72,24 @@ void updateFeaturesByOffset(map<vector<float>, VlSiftKeypoint> &feature, float o
 	}
 }
 
-CImg<unsigned char> stitching(const vector<CImg<unsigned char>> &src_imgs) {
+CImg<unsigned char> stitching(vector<CImg<unsigned char>> &src_imgs) {
 	// Used to save each image's features and corresponding coordinates.
 	vector<map<vector<float>, VlSiftKeypoint>> features(src_imgs.size());
 
 	for (int i = 0; i < src_imgs.size(); i++) {
+		cout << "Preprocessing input image " << i << " ..." << endl;
+
+		cout << "Cylinder projection started." << endl;
+		src_imgs[i] = cylinderProjection(src_imgs[i]);
+		cout << "Cylinder projection finished." << endl;
+
 		CImg<unsigned char> gray = get_gray_image(src_imgs[i]);
+
+		cout << "Extracting SIFT feature started." << endl;
 		features[i] = getFeatureFromImage(gray);
-		cout << i << endl;
+		cout << "Extracting SIFT feature finished." << endl;
+
+		cout << "Preprocessing input image " << i << " finished." << endl << endl;
 	}
 
 	// Used to record the image's adjacent images.
@@ -86,6 +97,8 @@ CImg<unsigned char> stitching(const vector<CImg<unsigned char>> &src_imgs) {
 
 	// Used to record each image's adjacent images.
 	vector<vector<int>> matching_index(src_imgs.size());
+
+	cout << "Finding adjacent images ..." << endl;
 
 	for (int i = 0; i < src_imgs.size(); i++) {
 		for (int j = 0; j < src_imgs.size(); j++) {
@@ -95,16 +108,22 @@ CImg<unsigned char> stitching(const vector<CImg<unsigned char>> &src_imgs) {
 			vector<point_pair> pairs = getPointPairsFromFeature(features[i], features[j]);
 			if (pairs.size() >= 20) {
 				need_stitching[i][j] = true;
+
+				cout << "Image " << i << " and " << j << " are adjacent." << endl;
 				matching_index[i].push_back(j);
 			}
 
 		}
 	}
 
+	cout << endl;
+
+	cout << "Stitching begins." << endl << endl;
 	// Stitching begins.
 
 	// Stitching from middle to have better visual effect.
 	int start_index = getMiddleIndex(matching_index);
+	//int start_index = 3;
 
 	// Used to record the previous stitched image.
 	int prev_dst_index = start_index;
@@ -118,7 +137,7 @@ CImg<unsigned char> stitching(const vector<CImg<unsigned char>> &src_imgs) {
 		int src_index = unstitched_index.front();
 		unstitched_index.pop();
 
-		for (int j = 0; j < matching_index[src_index].size(); j++) {
+		for (int j = matching_index[src_index].size() - 1; j >= 0; j--) {
 			int dst_index = matching_index[src_index][j];
 
 			if (need_stitching[src_index][dst_index] == false) {
@@ -131,32 +150,47 @@ CImg<unsigned char> stitching(const vector<CImg<unsigned char>> &src_imgs) {
 			}
 
 			// Matching features using best-bin kd-tree.
-			vector<point_pair> &src_to_dst_pairs = getPointPairsFromFeature(features[src_index], features[dst_index]);
-			vector<point_pair> &dst_to_src_pairs = getPointPairsFromFeature(features[dst_index], features[src_index]);
+			vector<point_pair> src_to_dst_pairs = getPointPairsFromFeature(features[src_index], features[dst_index]);
+			vector<point_pair> dst_to_src_pairs = getPointPairsFromFeature(features[dst_index], features[src_index]);
+
+			if (src_to_dst_pairs.size() > dst_to_src_pairs.size()) {
+				dst_to_src_pairs.clear();
+				for (int i = 0; i < src_to_dst_pairs.size(); i++) {
+					point_pair temp(src_to_dst_pairs[i].b, src_to_dst_pairs[i].a);
+					dst_to_src_pairs.push_back(temp);
+				}
+			}
+			else {
+				src_to_dst_pairs.clear();
+				for (int i = 0; i < dst_to_src_pairs.size(); i++) {
+					point_pair temp(dst_to_src_pairs[i].b, dst_to_src_pairs[i].a);
+					src_to_dst_pairs.push_back(temp);
+				}
+			}
 
 			// Finding homography by RANSAC.
 			Parameters forward_H = RANSAC(dst_to_src_pairs);
 			Parameters backward_H = RANSAC(src_to_dst_pairs);
 
 			// Calculate the size of the image after stitching.
-			int min_x = getMinXAfterWarping(src_imgs[dst_index], forward_H);
+			float min_x = getMinXAfterWarping(src_imgs[dst_index], forward_H);
 			min_x = (min_x < 0) ? min_x : 0;
-			int min_y = getMinYAfterWarping(src_imgs[dst_index], forward_H);
+			float min_y = getMinYAfterWarping(src_imgs[dst_index], forward_H);
 			min_y = (min_y < 0) ? min_y : 0;
-			int max_x = getMaxXAfterWarping(src_imgs[dst_index], forward_H);
+			float max_x = getMaxXAfterWarping(src_imgs[dst_index], forward_H);
 			max_x = (max_x >= cur_stitched_img.width()) ? max_x : cur_stitched_img.width();
-			int max_y = getMaxYAferWarping(src_imgs[dst_index], forward_H);
+			float max_y = getMaxYAferWarping(src_imgs[dst_index], forward_H);
 			max_y = (max_y >= cur_stitched_img.height()) ? max_y : cur_stitched_img.height();
 
-			int new_width = max_x - min_x;
-			int new_height = max_y - min_y;
+			int new_width = ceil(max_x - min_x);
+			int new_height = ceil(max_y - min_y);
 
 			CImg<unsigned char> a(new_width, new_height, 1, src_imgs[dst_index].spectrum(), 0);
 			CImg<unsigned char> b(new_width, new_height, 1, src_imgs[dst_index].spectrum(), 0);
 
 			// Warping the dst image into the coordinate space of currently stitched image.
 			warpingImageByHomography(src_imgs[dst_index], a, backward_H, min_x, min_y);
-			// Translating stitched image according to min_x and min_y.
+			// Move stitched image according to min_x and min_y as translation.
 			movingImageByOffset(cur_stitched_img, b, min_x, min_y);
 
 			// Update features coordinates according to homography.
@@ -166,11 +200,10 @@ CImg<unsigned char> stitching(const vector<CImg<unsigned char>> &src_imgs) {
 
 			// Blending two images.
 			cur_stitched_img = blendTwoImages(a, b);
-			cur_stitched_img.display();
 			prev_dst_index = dst_index;
-		}
 
-		cout << src_index << endl;
+			cout << "Image " << dst_index << " has stitched." << endl << endl;
+		}
 	}
 
 	return cur_stitched_img;

@@ -12,9 +12,8 @@ using namespace std;
 
 #define NUM_OF_PAIR 4
 #define CONFIDENCE 0.99
-#define INLINER_RATIO 0.6
-
-#define RANSAC_THRESHOLD 3.0
+#define INLINER_RATIO 0.5
+#define RANSAC_THRESHOLD 4.0
 
 extern "C" {
 #include "vl/generic.h"
@@ -63,11 +62,13 @@ struct Parameters {
 		c7 = _c7;
 		c8 = _c8;
 	}
+	void print() {
+		cout << c1 << " " << c2 << " " << c3 << " " << c4 << endl;
+		cout << c5 << " " << c6 << " " << c7 << " " << c8 << endl;
+	}
 };
 
-int getXAfterWarping(int x, int y, Parameters H);
 float getXAfterWarping(float x, float y, Parameters H);
-int getYAfterWarping(int x, int y, Parameters H);
 float getYAfterWarping(float x, float y, Parameters H);
 
 vector<point_pair> getPointPairsFromFeature(const map<vector<float>, VlSiftKeypoint> &feature_a, const map<vector<float>, VlSiftKeypoint> &feature_b);

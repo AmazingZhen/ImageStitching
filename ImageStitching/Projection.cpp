@@ -13,7 +13,6 @@ CImg<unsigned char> cylinderProjection(const CImg<unsigned char> &src) {
 		projection_height = src.width();
 
 		r = (projection_width / 2.0) / tan(ANGLE * PI / 180.0);
-		float cos_val = cos(ANGLE * PI / 180.0);
 
 		for (int i = 0; i < res.width(); i++) {
 			for (int j = 0; j < res.height(); j++) {

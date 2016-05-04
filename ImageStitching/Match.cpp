@@ -1,17 +1,10 @@
 #include "stdafx.h"
 #include "Match.h"
 #include "Feature.h"
-
-int getXAfterWarping(int x, int y, Parameters H) {
-	return ceil(H.c1 * x + H.c2 * y + H.c3 * x * y + H.c4);
-}
+#include <set>
 
 float getXAfterWarping(float x, float y, Parameters H) {
 	return H.c1 * x + H.c2 * y + H.c3 * x * y + H.c4;
-}
-
-int getYAfterWarping(int x, int y, Parameters H) {
-	return ceil(H.c5 * x + H.c6 * y + H.c7 * x * y + H.c8);
 }
 
 float getYAfterWarping(float x, float y, Parameters H) {
@@ -75,7 +68,7 @@ vector<point_pair> getPointPairsFromFeature(const map<vector<float>, VlSiftKeypo
 }
 
 Parameters getHomographyFromPoingPairs(const vector<point_pair> &pair) {
-	// assert(pair.size() == 4);
+	assert(pair.size() == 4);
 
 	float u0 = pair[0].a.x, v0 = pair[0].a.y;
 	float u1 = pair[1].a.x, v1 = pair[1].a.y;
@@ -142,10 +135,14 @@ int random(int min, int max) {
 	return rand() % (max - min + 1) + min;
 }
 
-int getNumOfInliners(const vector<point_pair> &pairs, Parameters H) {
-	int count = 0;
+vector<int> getIndexsOfInliner(const vector<point_pair> &pairs, Parameters H, set<int> seleted_indexs) {
+	vector<int> inliner_indexs;
 
 	for (int i = 0; i < pairs.size(); i++) {
+		if (seleted_indexs.find(i) != seleted_indexs.end()) {
+			continue;
+		}
+
 		float real_x = pairs[i].b.x;
 		float real_y = pairs[i].b.y;
 
@@ -154,37 +151,77 @@ int getNumOfInliners(const vector<point_pair> &pairs, Parameters H) {
 
 		float distance = sqrt((x - real_x) * (x - real_x) + (y - real_y) * (y - real_y));
 		if (distance < RANSAC_THRESHOLD) {
-			count++;
+			inliner_indexs.push_back(i);
 		}
 	}
 
-	return count;
+	return inliner_indexs;
+}
+
+Parameters leastSquaresSolution(const vector<point_pair> pairs, vector<int> inliner_indexs) {
+	int calc_size = inliner_indexs.size();
+
+	CImg<double> A(4, calc_size, 1, 1, 0);
+	CImg<double> b(1, calc_size, 1, 1, 0);
+
+	for (int i = 0; i < calc_size; i++) {
+		int cur_index = inliner_indexs[i];
+
+		A(0, i) = pairs[cur_index].a.x;
+		A(1, i) = pairs[cur_index].a.y;
+		A(2, i) = pairs[cur_index].a.x * pairs[cur_index].a.y;
+		A(3, i) = 1;
+
+		b(0, i) = pairs[cur_index].b.x;
+	}
+
+	CImg<double> x1 = b.get_solve(A);
+
+	for (int i = 0; i < calc_size; i++) {
+		int cur_index = inliner_indexs[i];
+
+		b(0, i) = pairs[cur_index].b.y;
+	}
+
+	CImg<double> x2 = b.get_solve(A);
+
+	return Parameters(x1(0, 0), x1(0, 1), x1(0, 2), x1(0, 3), x2(0, 0), x2(0, 1), x2(0, 2), x2(0, 3));
+
 }
 
 Parameters RANSAC(const vector<point_pair> &pairs) {
-	assert(pairs.size() >= 4);
+	assert(pairs.size() >= NUM_OF_PAIR);
 
 	srand(time(0));
 
 	int iterations = numberOfIterations(CONFIDENCE, INLINER_RATIO, NUM_OF_PAIR);
-	int max_inliner_num = 0;
-	Parameters best_H(0, 0, 0, 0, 0, 0, 0, 0);
+
+	vector<int> max_inliner_indexs;
 
 	while (iterations--) {
 		vector<point_pair> random_pairs;
+		set<int> seleted_indexs;
 
 		for (int i = 0; i < NUM_OF_PAIR; i++) {
-			random_pairs.push_back(pairs[random(0, pairs.size() - 1)]);
+			int index = random(0, pairs.size() - 1);
+			while (seleted_indexs.find(index) != seleted_indexs.end()) {
+				index = random(0, pairs.size() - 1);
+			}
+			seleted_indexs.insert(index);
+
+			random_pairs.push_back(pairs[index]);
 		}
 
 		Parameters H = getHomographyFromPoingPairs(random_pairs);
 		
-		int num = getNumOfInliners(pairs, H);
-		if (num > max_inliner_num) {
-			max_inliner_num = num;
-			best_H = H;
+		vector<int> cur_inliner_indexs = getIndexsOfInliner(pairs, H, seleted_indexs);
+		if (cur_inliner_indexs.size() > max_inliner_indexs.size()) {
+			max_inliner_indexs = cur_inliner_indexs;
 		}
 	}
 
-	return best_H;
+	Parameters t = leastSquaresSolution(pairs, max_inliner_indexs);
+
+	return t;
+
 }

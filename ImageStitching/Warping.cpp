@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Warping.h"
 
-int getMaxXAfterWarping(const CImg<unsigned char> &src, Parameters H) {
-	int max_x = getXAfterWarping(0, 0, H);
+float getMaxXAfterWarping(const CImg<unsigned char> &src, Parameters H) {
+	float max_x = getXAfterWarping(0, 0, H);
 
 	if (getXAfterWarping(src.width() - 1, 0, H) > max_x) {
 		max_x = getXAfterWarping(src.width() - 1, 0, H);
@@ -17,8 +17,8 @@ int getMaxXAfterWarping(const CImg<unsigned char> &src, Parameters H) {
 	return max_x;
 }
 
-int getMinXAfterWarping(const CImg<unsigned char> &src, Parameters H) {
-	int min_x = getXAfterWarping(0, 0, H);
+float getMinXAfterWarping(const CImg<unsigned char> &src, Parameters H) {
+	float min_x = getXAfterWarping(0, 0, H);
 
 	if (getXAfterWarping(src.width() - 1, 0, H) < min_x) {
 		min_x = getXAfterWarping(src.width() - 1, 0, H);
@@ -33,8 +33,8 @@ int getMinXAfterWarping(const CImg<unsigned char> &src, Parameters H) {
 	return min_x;
 }
 
-int getMaxYAferWarping(const CImg<unsigned char> &src, Parameters H) {
-	int max_y = getYAfterWarping(0, 0, H);
+float getMaxYAferWarping(const CImg<unsigned char> &src, Parameters H) {
+	float max_y = getYAfterWarping(0, 0, H);
 
 	if (getYAfterWarping(src.width() - 1, 0, H) > max_y) {
 		max_y = getYAfterWarping(src.width() - 1, 0, H);
@@ -49,8 +49,8 @@ int getMaxYAferWarping(const CImg<unsigned char> &src, Parameters H) {
 	return max_y;
 }
 
-int getMinYAfterWarping(const CImg<unsigned char> &src, Parameters H) {
-	int min_y = getYAfterWarping(0, 0, H);
+float getMinYAfterWarping(const CImg<unsigned char> &src, Parameters H) {
+	float min_y = getYAfterWarping(0, 0, H);
 
 	if (getYAfterWarping(src.width() - 1, 0, H) < min_y) {
 		min_y = getYAfterWarping(src.width() - 1, 0, H);
@@ -79,7 +79,7 @@ int getHeightAfterWarping(const CImg<unsigned char> &src, Parameters H) {
 	return max - min;
 }
 
-void warpingImageByHomography(const CImg<unsigned char> &src, CImg<unsigned char> &dst, Parameters H, int offset_x, int offset_y) {
+void warpingImageByHomography(const CImg<unsigned char> &src, CImg<unsigned char> &dst, Parameters H, float offset_x, float offset_y) {
 	for (int dst_x = 0; dst_x < dst.width(); dst_x++) {
 		for (int dst_y = 0; dst_y < dst.height(); dst_y++) {
 			int src_x = getXAfterWarping(dst_x + offset_x, dst_y + offset_y, H);
