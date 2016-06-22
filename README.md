@@ -8,7 +8,8 @@ Based on [CImg Library](http://cimg.eu/) and [Vlfeat library](http://www.vlfeat.
 
 ## Output
 - A stitched image.
-- Output images are in the folder "res".
+- ![result1](https://github.com/AmazingZhen/ImageStitching/blob/master/ImageStitching/res/pano1.jpg?raw=true)
+- ![result2](https://github.com/AmazingZhen/ImageStitching/blob/master/ImageStitching/res/pano2.jpg?raw=true)
 
 ## Algorithmic process
 - Image registration
